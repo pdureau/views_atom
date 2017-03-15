@@ -1,0 +1,35 @@
+{#
+/**
+ * @file
+ * Default theme implementation to display an item in a views Atom feed.
+ *
+ * Available variables:
+ * - id: Atom item UUID.
+ * - title: Atom item title.
+ * - link_alternate_html: Link to the HTNL representation.
+ * - published: Publication date.
+ * - updated: Last update date.
+ * - content: Body text.
+ * - author_name: Author display name.
+ * - author_link: Author URI if not anonynous.
+ * - rdf: A bunch of RDF triple as links
+ *
+ * @see template_preprocess_views_view_row_atom()
+ *
+ * @ingroup themeable
+ */
+#}
+
+  <entry>
+    <id>{{ id }}</id>
+    <title>{{ title }}</title>
+    <updated>{{ updated }}</updated>
+    {% if link_self %}<link rel="self" type="text/html" href="{{ link_self }}"/>{% endif %}
+    {% if link_alternate_html %}<link rel="alternate" type="text/html" href="{{ link_alternate_html }}"/>{% endif %}
+    {% if published %}<published>{{ published }}</published>{% endif %}
+    {% if content %}<content type="html">{{ content }}</content>{% endif %}
+    {% if author_name or author_link %}<author>
+      {% if author_name %}<name>{{ author_name }}</name>{% endif %}
+      {% if author_link %}<uri>{{ author_link }}</uri>{% endif %}
+    </author>{% endif %}
+  </entry>

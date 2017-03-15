@@ -1,0 +1,9 @@
+name: Views Atom
+description: 'Implements an Atom Feed output for Views.'
+core: 8.x
+package: 'Custom'
+dependencies:
+- rdf
+- views
+type: module
+version: 8.x-1.0

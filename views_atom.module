@@ -1,0 +1,102 @@
+<?php
+
+/**
+ * @file
+ * Hooks for views_atom module.
+ */
+
+use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Core\Url;
+
+/**
+ * Prepares variables for Atom feed templates.
+ *
+ * Default template: views-view-atom.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - view: A ViewExecutable object.
+ *   - rows: The raw row data.
+ */
+function template_preprocess_views_view_atom(&$variables) {
+  $view = $variables['view'];
+  $items = $variables['rows'];
+  $style = $view->style_plugin;
+
+  $config = \Drupal::config('system.site');
+
+  $variables['id'] = "urn:uuid:" . $view->storage->get('uuid');
+  $variables['updated'] = $style->getUpdated();
+
+  // The RSS 2.0 "spec" doesn't indicate HTML can be used in the description.
+  // We strip all HTML tags, but need to prevent double encoding from properly
+  // escaped source data (such as &amp becoming &amp;amp;).
+  $variables['description'] = SafeMarkup::checkPlain(Html::decodeEntities(strip_tags($style->getDescription())));
+
+  if ($view->display_handler->getOption('sitename_title')) {
+    $title = $config->get('name');
+    if ($slogan = $config->get('slogan')) {
+      $title .= ' - ' . $slogan;
+    }
+  }
+  else {
+    $title = $view->getTitle();
+  }
+  $variables['title'] = SafeMarkup::checkPlain($title);
+
+  // Figure out which display which has a path we're using for this feed. If
+  // there isn't one, use the global $base_url.
+  $link_display_id = $view->display_handler->getLinkDisplay();
+  if ($link_display_id && $display = $view->displayHandlers->get($link_display_id)) {
+    $url = $view->getUrl(NULL, $link_display_id);
+  }
+  /** @var \Drupal\Core\Url $url */
+  if ($url) {
+    $url_options = ['absolute' => TRUE];
+    if (!empty($view->exposed_raw_input)) {
+      $url_options['query'] = $view->exposed_raw_input;
+    }
+    // Compare the link to the default home page; if it's the default home page,
+    // just use $base_url.
+    $url_string = $url->setOptions($url_options)->toString();
+    // @todo Should page.front be stored with a leading slash? See
+    //   https://www.drupal.org/node/2430595.
+    if ($url_string === Url::fromUserInput('/' . $config->get('page.front'))->toString()) {
+      $url_string = Url::fromRoute('<front>')->setAbsolute()->toString();
+    }
+    $variables['link_self'] = $url_string;
+  }
+  $variables['link_alternate_hml'] = $style->getUpdated();
+  $variables['langcode'] = SafeMarkup::checkPlain(\Drupal::languageManager()->getCurrentLanguage()->getId());
+  $variables['items'] = $items;
+
+  // During live preview we don't want to output the header since the contents
+  // of the feed are being displayed inside a normal HTML page.
+  if (empty($variables['view']->live_preview)) {
+    $variables['view']->getResponse()->headers->set('Content-Type', 'application/atom+xml; charset=utf-8');
+  }
+}
+
+/**
+ * Prepares variables for views Atom item templates.
+ *
+ * Default template: views-view-row-atom.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - row: The raw results rows.
+ */
+function template_preprocess_views_view_row_atom(&$variables) {
+  $item = $variables['row'];
+  $variables['title'] = SafeMarkup::checkPlain($item->title);
+  $variables['link_self'] = $item->link_self;
+  $variables['link_alternate_html'] = $item->link_alternate_html;
+  $variables['content'] = SafeMarkup::checkPlain($item->content);
+  $variables['id'] = $item->id;
+  $variables['published'] = $item->published;
+  $variables['updated'] = $item->updated;
+  $variables['author_name'] = $item->author_name;
+  $variables['author_link'] = $item->author_link;
+  // TODO: $variables['rdf'] = $item->rdf.
+}

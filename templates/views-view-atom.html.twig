@@ -1,0 +1,28 @@
+{#
+/**
+ * @file
+ * Default template for feed displays that use the Atom style.
+ *
+ * Available variables:
+ * - id: The view config entity UUID
+ * - title: The title of the feed (as set in the view).
+ * - link_self: The link to the feed (the view path).
+ * - description: The feed description (from feed settings).
+ * - updated: From the last updated item.
+ * - langcode: The language encoding.
+ * - items: The feed items themselves.
+ *
+ * @see template_preprocess_views_view_rss()
+ *
+ * @ingroup themeable
+ */
+#}
+
+<feed xml:lang="{{ langcode }}" xmlns="http://www.w3.org/2005/Atom">
+  <id>{{ id }}</id>
+  <title>{{ title }}</title>
+  <updated>{{ updated }}</updated>
+  {% if link_alternate_html %}<link rel="alternate" type="text/html" href="{{ link_alternate_html }}"/>{% endif %}
+  {% if link_self %}<link rel="self" type="application/atom+xml" href="{{ link_self }}"/>{% endif %}
+  {{ items }}
+</feed>
