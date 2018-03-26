@@ -2,13 +2,13 @@
   "name": "drupal/views_atom",
   "description": "Implements an Atom Feed output for Views.",
   "type": "drupal-module",
-  "license": "GPL-2.0+",
+  "license": "GPL-2.0-or-later",
   "authors": [
     {
       "name": "Pierre Dureau"
-    },
+    }
   ],
   "require": {
-    "drupal/drupal": "8.*",
+    "drupal/drupal": "8.*"
   }
 }
